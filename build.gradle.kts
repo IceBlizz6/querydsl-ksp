@@ -15,12 +15,6 @@ sourceSets.test {
 	kotlin.srcDir("test")
 }
 
-java {
-	toolchain {
-		languageVersion.set(JavaLanguageVersion.of(20))
-	}
-}
-
 dependencies {
 	implementation("com.google.devtools.ksp:symbol-processing-api:2.0.20-1.0.25")
 	implementation("com.squareup:kotlinpoet:1.18.1")
