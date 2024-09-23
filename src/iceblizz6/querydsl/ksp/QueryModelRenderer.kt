@@ -47,7 +47,6 @@ object QueryModelRenderer {
                     .forEach { addFunction(it) }
                 addType(makeCompanionObject(model.originalClassName, model.className))
             }
-            .addAnnotation(javax.annotation.processing.Generated::class)
             .build()
     }
 
