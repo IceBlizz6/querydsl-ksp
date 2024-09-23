@@ -22,7 +22,7 @@ plugins {
 }
 
 repositories {
-	maven { 
+    maven { 
         url = uri("https://jitpack.io") 
     }
 }
@@ -67,7 +67,7 @@ Add into your `build.gradle.kts` to configure.
 ```kotlin
 // Example
 ksp {
-	arg("querydsl.prefix", "QQ")
+    arg("querydsl.prefix", "QQ")
     arg("querydsl.excludedPackages", "com.example, com.sample")
 }
 ```
