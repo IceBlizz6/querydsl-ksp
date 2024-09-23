@@ -1,5 +1,6 @@
 plugins {
 	kotlin("jvm") version "2.0.20"
+	`maven-publish`
 }
 
 repositories {
@@ -21,4 +22,17 @@ dependencies {
 	implementation("com.squareup:kotlinpoet-ksp:1.18.1")
 	implementation("jakarta.persistence:jakarta.persistence-api:3.2.0")
 	implementation("com.querydsl:querydsl-core:5.1.0")
+}
+
+afterEvaluate {
+	publishing {
+		publications {
+			create<MavenPublication>("maven") {
+				from(components["kotlin"])
+				groupId = "io.github.iceblizz6"
+				artifactId = "querydsl-ksp"
+				version = "0.0.1"
+			}
+		}
+	}
 }
