@@ -221,7 +221,7 @@ object QueryModelRenderer {
                 )
                 .build(),
             FunSpec.constructorBuilder()
-                .addParameter("path", Path::class.asClassName().parameterizedBy(source))
+                .addParameter("path", Path::class.asClassName().parameterizedBy(WildcardTypeName.producerOf(source)))
                 .callSuperConstructor("path.type, path.metadata")
                 .build(),
             FunSpec.constructorBuilder()
@@ -229,7 +229,7 @@ object QueryModelRenderer {
                 .callSuperConstructor("$source::class.java, metadata")
                 .build(),
             FunSpec.constructorBuilder()
-                .addParameter("type", Class::class.asClassName().parameterizedBy(source))
+                .addParameter("type", Class::class.asClassName().parameterizedBy(WildcardTypeName.producerOf(source)))
                 .addParameter("metadata", PathMetadata::class)
                 .callSuperConstructor("type, metadata")
                 .build()
