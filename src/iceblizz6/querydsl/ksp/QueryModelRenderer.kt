@@ -25,7 +25,7 @@ object QueryModelRenderer {
             }
             .apply {
                 model.superclass?.let { superclass ->
-                    PropertySpec
+                    val superProperty = PropertySpec
                         .builder("_super", superclass.className)
                         .delegate(
                             CodeBlock.builder()
@@ -35,6 +35,7 @@ object QueryModelRenderer {
                                 .build()
                         )
                         .build()
+                    addProperty(superProperty)
                 }
             }
             .apply {
