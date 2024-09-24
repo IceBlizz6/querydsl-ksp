@@ -19,7 +19,7 @@ class TypeExtractor(
 
     private fun simpleType(type: KSType): QPropertyType.Simple? {
         val className = type.toClassName()
-        val simpleType = SimpleType.entries.singleOrNull { it.className == className }
+        val simpleType = SimpleType.entries.singleOrNull { it.detectedClassNames.contains(className) }
         if (simpleType == null) {
             return null
         } else {

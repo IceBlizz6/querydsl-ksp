@@ -15,86 +15,109 @@ import java.time.ZonedDateTime
 import java.util.*
 
 enum class SimpleType(
+    val detectedClassNames: List<ClassName>,
     val className: ClassName,
     val pathClassName: ClassName,
     val pathTypeName: TypeName
 ) {
     CHAR(
+        listOf(Char::class.asClassName()),
         Char::class.asClassName(),
         ComparablePath::class.asClassName(),
         ComparablePath::class.asClassName().parameterizedBy(Char::class.asClassName())
     ),
     STRING(
+        listOf(String::class.asClassName()),
         String::class.asClassName(),
         StringPath::class.asClassName(),
         StringPath::class.asTypeName()
     ),
     UUID(
+        listOf(java.util.UUID::class.asClassName()),
         java.util.UUID::class.asClassName(),
         ComparablePath::class.asClassName(),
         ComparablePath::class.asClassName().parameterizedBy(java.util.UUID::class.asClassName())
     ),
+    BYTE(
+        listOf(Byte::class.asClassName(), UByte::class.asClassName()),
+        Byte::class.asClassName(),
+        NumberPath::class.asClassName(),
+        NumberPath::class.parameterizedBy(Byte::class)
+    ),
     SHORT(
+        listOf(Short::class.asClassName(), UShort::class.asClassName()),
         Short::class.asClassName(),
         NumberPath::class.asClassName(),
         NumberPath::class.parameterizedBy(Short::class)
     ),
     INT(
+        listOf(Int::class.asClassName(), UInt::class.asClassName()),
         Int::class.asClassName(),
         NumberPath::class.asClassName(),
         NumberPath::class.parameterizedBy(Int::class)
     ),
-    LONG(
-        Long::class.asClassName(),
-        NumberPath::class.asClassName(),
-        NumberPath::class.parameterizedBy(Long::class)
-    ),
     BIG_INTEGER(
+        listOf(BigInteger::class.asClassName()),
         BigInteger::class.asClassName(),
         NumberPath::class.asClassName(),
         NumberPath::class.parameterizedBy(BigInteger::class)
     ),
+    LONG(
+        listOf(Long::class.asClassName(), ULong::class.asClassName()),
+        Long::class.asClassName(),
+        NumberPath::class.asClassName(),
+        NumberPath::class.parameterizedBy(Long::class)
+    ),
     FLOAT(
+        listOf(Float::class.asClassName(), Float::class.asClassName()),
         Float::class.asClassName(),
         NumberPath::class.asClassName(),
         NumberPath::class.parameterizedBy(Float::class)
     ),
     DOUBLE(
+        listOf(Double::class.asClassName()),
         Double::class.asClassName(),
         NumberPath::class.asClassName(),
         NumberPath::class.parameterizedBy(Double::class)
     ),
     BIG_DECIMAL(
+        listOf(),
         BigDecimal::class.asClassName(),
         NumberPath::class.asClassName(),
         NumberPath::class.parameterizedBy(BigDecimal::class)
     ),
     BOOLEAN(
+        listOf(Boolean::class.asClassName()),
         Boolean::class.asClassName(),
         BooleanPath::class.asClassName(),
         BooleanPath::class.asTypeName()
     ),
     LOCAL_DATE(
+        listOf(LocalDate::class.asClassName()),
         LocalDate::class.asClassName(),
         DatePath::class.asClassName(),
         DatePath::class.parameterizedBy(LocalDate::class)
     ),
     ZONED_DATE_TIME(
+        listOf(ZonedDateTime::class.asClassName()),
         ZonedDateTime::class.asClassName(),
         DateTimePath::class.asClassName(),
         DateTimePath::class.parameterizedBy(ZonedDateTime::class)
     ),
     LOCAL_DATE_TIME(
+        listOf(LocalDateTime::class.asClassName()),
         LocalDateTime::class.asClassName(),
         DateTimePath::class.asClassName(),
         DateTimePath::class.parameterizedBy(LocalDateTime::class)
     ),
     LOCAL_TIME(
+        listOf(LocalTime::class.asClassName()),
         LocalTime::class.asClassName(),
         TimePath::class.asClassName(),
         TimePath::class.parameterizedBy(LocalTime::class)
     ),
     LOCALE(
+        listOf(Locale::class.asClassName()),
         Locale::class.asClassName(),
         SimplePath::class.asClassName(),
         SimplePath::class.parameterizedBy(Locale::class)

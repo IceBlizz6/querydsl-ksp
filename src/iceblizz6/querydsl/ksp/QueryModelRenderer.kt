@@ -96,6 +96,12 @@ object QueryModelRenderer {
                     .initializer("createComparable(\"$name\", Char::class.java)")
                     .build()
             }
+            SimpleType.BYTE -> {
+                PropertySpec
+                    .builder(name, NumberPath::class.asClassName().parameterizedBy(Byte::class.asClassName()))
+                    .initializer("createNumber(\"$name\", Byte::class.java)")
+                    .build()
+            }
             SimpleType.INT -> {
                 PropertySpec
                     .builder(name, NumberPath::class.asClassName().parameterizedBy(Int::class.asClassName()))
