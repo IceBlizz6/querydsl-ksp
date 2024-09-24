@@ -30,20 +30,25 @@ class QueryDslProcessor(
     }
 
     private fun processImpl(resolver: Resolver) {
-        val entityAnnotated = resolver.getSymbolsWithAnnotation(Entity::class.qualifiedName!!)
+        val declarations = mutableMapOf<KSClassDeclaration, QueryModel.Type>()
+
+        resolver.getSymbolsWithAnnotation(Embeddable::class.qualifiedName!!)
             .map { it as KSClassDeclaration }
             .filter { isIncluded(it) }
-            .map { QueryModelExtractor.ModelDeclaration(it, QueryModel.Type.ENTITY) }
-        val superclassAnnotated = resolver.getSymbolsWithAnnotation(MappedSuperclass::class.qualifiedName!!)
+            .forEach { declarations.putIfAbsent(it, QueryModel.Type.EMBEDDABLE) }
+
+        resolver.getSymbolsWithAnnotation(MappedSuperclass::class.qualifiedName!!)
             .map { it as KSClassDeclaration }
             .filter { isIncluded(it) }
-            .map { QueryModelExtractor.ModelDeclaration(it, QueryModel.Type.SUPERCLASS) }
-        val embeddableAnnotated = resolver.getSymbolsWithAnnotation(Embeddable::class.qualifiedName!!)
+            .forEach { declarations.putIfAbsent(it, QueryModel.Type.SUPERCLASS) }
+
+        resolver.getSymbolsWithAnnotation(Entity::class.qualifiedName!!)
             .map { it as KSClassDeclaration }
             .filter { isIncluded(it) }
-            .map { QueryModelExtractor.ModelDeclaration(it, QueryModel.Type.EMBEDDABLE) }
-        val allDeclarations = entityAnnotated + superclassAnnotated + embeddableAnnotated
-        val models = QueryModelExtractor.process(settings, allDeclarations.toList())
+            .forEach { declarations.putIfAbsent(it, QueryModel.Type.ENTITY) }
+
+        val allDeclarations = declarations.map { QueryModelExtractor.ModelDeclaration(it.key, it.value) }
+        val models = QueryModelExtractor.process(settings, allDeclarations)
         models.forEach { model ->
             val typeSpec = QueryModelRenderer.render(model)
             FileSpec.builder(model.className)
