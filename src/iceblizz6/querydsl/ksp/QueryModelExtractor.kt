@@ -3,12 +3,15 @@ package iceblizz6.querydsl.ksp
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.ksp.toClassName
 import jakarta.persistence.Transient
 
 object QueryModelExtractor {
+    private val transientClassName = Transient::class.asClassName()
+
     fun process(
         settings: KspSettings,
         declarations: List<ModelDeclaration>
@@ -41,7 +44,7 @@ object QueryModelExtractor {
             val model = entry.value
             val classDeclaration = entry.key.classDeclaration
             val properties = classDeclaration.getDeclaredProperties()
-                .filter { property -> property.annotations.none { it.shortName.asString() == Transient::class.simpleName!! } }
+                .filter { property -> !property.isTransient() && !property.isGetterTransient() }
                 .map { property ->
                     val propName = property.simpleName.asString()
                     val extractor = TypeExtractor(property, models)
@@ -51,6 +54,16 @@ object QueryModelExtractor {
             model.properties.addAll(properties)
         }
         return models
+    }
+
+    private fun KSPropertyDeclaration.isTransient(): Boolean {
+        return annotations.any { it.annotationType.resolve().toClassName() == transientClassName }
+    }
+
+    private fun KSPropertyDeclaration.isGetterTransient(): Boolean {
+        return this.getter?.let { getter ->
+            getter.annotations.any { it.annotationType.resolve().toClassName() == transientClassName }
+        } ?: false
     }
 
     private fun KSClassDeclaration.superclassOrNull(): ClassName? {
