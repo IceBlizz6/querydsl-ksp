@@ -11,11 +11,17 @@ class TypeExtractor(
     private val models: List<QueryModel>
 ) {
     fun extract(type: KSType): QPropertyType {
-        return parameterType(type)
-            ?: simpleType(type)
-            ?: referenceType(type)
-            ?: collectionType(type)
-            ?: throwError("Type was not recognised, This may be an entity that has not been annotated with @Entity, or maybe you are using javax instead of jakarta.")
+        val declaration = type.declaration
+        if (declaration is KSTypeAlias) {
+            val innerType = declaration.type.resolve()
+            return extract(innerType)
+        } else {
+            return parameterType(type)
+                ?: simpleType(type)
+                ?: referenceType(type)
+                ?: collectionType(type)
+                ?: throwError("Type was not recognised, This may be an entity that has not been annotated with @Entity, or maybe you are using javax instead of jakarta.")
+        }
     }
 
     private fun parameterType(type: KSType): QPropertyType? {
