@@ -87,7 +87,7 @@ enum class SimpleType(
         NumberPath::class.parameterizedBy(Double::class)
     ),
     BIG_DECIMAL(
-        listOf(),
+        listOf(BigDecimal::class.asClassName()),
         BigDecimal::class.asClassName(),
         NumberPath::class.asClassName(),
         NumberPath::class.parameterizedBy(BigDecimal::class)
