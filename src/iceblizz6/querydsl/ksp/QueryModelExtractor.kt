@@ -1,7 +1,6 @@
 package iceblizz6.querydsl.ksp
 
 import com.google.devtools.ksp.getDeclaredProperties
-import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.symbol.ClassKind
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.google.devtools.ksp.symbol.KSPropertyDeclaration

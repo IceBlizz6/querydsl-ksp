@@ -1,22 +1,14 @@
 package iceblizz6.querydsl.ksp
 
-import com.google.devtools.ksp.getDeclaredProperties
-import com.google.devtools.ksp.isAnnotationPresent
 import com.google.devtools.ksp.processing.CodeGenerator
 import com.google.devtools.ksp.processing.Resolver
 import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.symbol.*
-import com.querydsl.core.annotations.QueryProjection
 import com.squareup.kotlinpoet.*
-import com.squareup.kotlinpoet.ksp.toClassName
-import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 import jakarta.persistence.Embeddable
 import jakarta.persistence.Entity
 import jakarta.persistence.MappedSuperclass
-import jakarta.persistence.Transient
-import java.time.LocalDate
-import java.time.ZonedDateTime
 
 class QueryDslProcessor(
     private val settings: KspSettings,
