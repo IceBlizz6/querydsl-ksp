@@ -44,7 +44,9 @@ object QueryModelExtractor {
             val model = entry.value
             val classDeclaration = entry.key.classDeclaration
             val properties = classDeclaration.getDeclaredProperties()
-                .filter { property -> !property.isTransient() && !property.isGetterTransient() }
+                .filter { !it.isTransient() }
+                .filter { !it.isGetterTransient() }
+                .filter { it.hasBackingField }
                 .map { property ->
                     val propName = property.simpleName.asString()
                     val extractor = TypeExtractor(property, models)
