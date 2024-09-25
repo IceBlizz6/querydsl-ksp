@@ -4,7 +4,7 @@ import com.squareup.kotlinpoet.ClassName
 
 class QueryModel(
     val originalClassName: ClassName,
-    val typeParameters: List<ClassName>,
+    val typeParameterCount: Int,
     val className: ClassName,
     val type: Type
 ) {

@@ -29,10 +29,11 @@ object QueryModelRenderer {
     }
 
     private fun TypeSpec.Builder.setEntitySuperclass(model: QueryModel): TypeSpec.Builder {
-        val constraint: TypeName = if (model.typeParameters.isEmpty()) {
-            model.originalClassName
+        val constraint: TypeName = if (model.typeParameterCount > 0) {
+            val typeParams = (0..<model.typeParameterCount).map { STAR }
+            model.originalClassName.parameterizedBy(typeParams)
         } else {
-            model.originalClassName.parameterizedBy(model.typeParameters)
+            model.originalClassName
         }
         superclass(
             when (model.type) {
@@ -242,15 +243,16 @@ object QueryModelRenderer {
     }
 
     private fun TypeSpec.Builder.constructorForPath(model: QueryModel): TypeSpec.Builder {
-        if (model.typeParameters.isEmpty()) {
-            val source = model.originalClassName
+        if (model.typeParameterCount > 0) {
+            val typeParams = (0..<model.typeParameterCount).map { STAR }
+            val source = model.originalClassName.parameterizedBy(typeParams)
             val spec = FunSpec.constructorBuilder()
                 .addParameter("path", Path::class.asClassName().parameterizedBy(WildcardTypeName.producerOf(source)))
                 .callSuperConstructor("path.type, path.metadata")
                 .build()
             addFunction(spec)
         } else {
-            val source = model.originalClassName.parameterizedBy(model.typeParameters)
+            val source = model.originalClassName
             val spec = FunSpec.constructorBuilder()
                 .addParameter("path", Path::class.asClassName().parameterizedBy(WildcardTypeName.producerOf(source)))
                 .callSuperConstructor("path.type, path.metadata")
@@ -261,69 +263,39 @@ object QueryModelRenderer {
     }
 
     private fun TypeSpec.Builder.constructorForMetadata(model: QueryModel): TypeSpec.Builder {
-        if (model.typeParameters.isEmpty()) {
-            val source = model.originalClassName
-            val spec = FunSpec.constructorBuilder()
-                .addParameter("metadata", PathMetadata::class)
-                .callSuperConstructor("$source::class.java, metadata")
-                .build()
-            addFunction(spec)
-        } else {
-            val source = model.originalClassName
-            val spec = FunSpec.constructorBuilder()
-                .addAnnotation(
-                    AnnotationSpec.builder(Suppress::class)
-                        .addMember("%S", "UNCHECKED_CAST")
-                        .build()
-                )
-                .addParameter("metadata", PathMetadata::class)
-                .callSuperConstructor("$source::class.java as Class<${model.originalClassName}<${model.typeParameters.joinToString(", ") { it.canonicalName }}>>, metadata")
-                .build()
-            addFunction(spec)
-        }
+        val source = model.originalClassName
+        val spec = FunSpec.constructorBuilder()
+            .addParameter("metadata", PathMetadata::class)
+            .callSuperConstructor("$source::class.java, metadata")
+            .build()
+        addFunction(spec)
         return this
     }
 
     private fun TypeSpec.Builder.constructorForVariable(model: QueryModel): TypeSpec.Builder {
-        if (model.typeParameters.isEmpty()) {
-            val spec = FunSpec.constructorBuilder()
-                .addParameter("variable", String::class)
-                .callSuperConstructor(
-                    "${model.originalClassName}::class.java",
-                    "${com.querydsl.core.types.PathMetadataFactory::class.qualifiedName!!}.forVariable(variable)"
-                )
-                .build()
-            addFunction(spec)
-        } else {
-            val spec = FunSpec.constructorBuilder()
-                .addAnnotation(
-                    AnnotationSpec.builder(Suppress::class)
-                        .addMember("%S", "UNCHECKED_CAST")
-                        .build()
-                )
-                .addParameter("variable", String::class)
-                .callSuperConstructor(
-                    "${model.originalClassName}::class.java as Class<${model.originalClassName}<${model.typeParameters.joinToString(", ") { it.canonicalName }}>>",
-                    "${com.querydsl.core.types.PathMetadataFactory::class.qualifiedName!!}.forVariable(variable)"
-                )
-                .build()
-            addFunction(spec)
-        }
+        val spec = FunSpec.constructorBuilder()
+            .addParameter("variable", String::class)
+            .callSuperConstructor(
+                "${model.originalClassName}::class.java",
+                "${com.querydsl.core.types.PathMetadataFactory::class.qualifiedName!!}.forVariable(variable)"
+            )
+            .build()
+        addFunction(spec)
         return this
     }
 
     private fun TypeSpec.Builder.constructorForTypeMetadata(model: QueryModel): TypeSpec.Builder {
-        if (model.typeParameters.isEmpty()) {
-            val source = model.originalClassName
+        if (model.typeParameterCount > 0) {
+            val typeParams = (0..<model.typeParameterCount).map { STAR }
+            val source = model.originalClassName.parameterizedBy(typeParams)
             val spec = FunSpec.constructorBuilder()
                 .addParameter("type", Class::class.asClassName().parameterizedBy(WildcardTypeName.producerOf(source)))
                 .addParameter("metadata", PathMetadata::class)
                 .callSuperConstructor("type, metadata")
                 .build()
-
             addFunction(spec)
         } else {
-            val source = model.originalClassName.parameterizedBy(model.typeParameters)
+            val source = model.originalClassName
             val spec = FunSpec.constructorBuilder()
                 .addParameter("type", Class::class.asClassName().parameterizedBy(WildcardTypeName.producerOf(source)))
                 .addParameter("metadata", PathMetadata::class)

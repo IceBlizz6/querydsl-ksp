@@ -18,19 +18,9 @@ object QueryModelExtractor {
     ): List<QueryModel> {
         val declarationToModelMap = declarations.associateWith { modelDeclaration ->
             val declaration = modelDeclaration.classDeclaration
-            val typeParameters = declaration.typeParameters.map { typeParameter ->
-                val bounds = typeParameter.bounds.toList()
-                if (bounds.isEmpty()) {
-                    Any::class.asClassName()
-                } else if (bounds.size == 1) {
-                    bounds.single().resolve().toClassName()
-                } else {
-                    error("There is no support for type parameters with multiple bounds, encountered at: ${modelDeclaration.classDeclaration.qualifiedName!!.asString()}")
-                }
-            }
             QueryModel(
                 originalClassName = declaration.toClassName(),
-                typeParameters = typeParameters,
+                typeParameterCount = declaration.typeParameters.size,
                 className = ClassName(
                     "${declaration.packageName.asString()}${settings.packageSuffix}",
                     "${settings.prefix}${declaration.simpleName.asString()}${settings.suffix}"
