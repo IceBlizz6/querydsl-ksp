@@ -20,6 +20,12 @@ enum class SimpleType(
     val pathClassName: ClassName,
     val pathTypeName: TypeName
 ) {
+    ANY(
+        listOf(Any::class.asClassName()),
+        Any::class.asClassName(),
+        SimplePath::class.asClassName(),
+        SimplePath::class.asClassName().parameterizedBy(Any::class.asClassName())
+    ),
     CHAR(
         listOf(Char::class.asClassName()),
         Char::class.asClassName(),
