@@ -4,6 +4,7 @@ import com.querydsl.core.types.dsl.EnumPath
 import com.querydsl.core.types.dsl.ListPath
 import com.querydsl.core.types.dsl.MapPath
 import com.querydsl.core.types.dsl.SetPath
+import com.querydsl.core.types.dsl.SimplePath
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeName
@@ -13,52 +14,65 @@ import com.squareup.kotlinpoet.asTypeName
 sealed interface QPropertyType {
     val pathTypeName: TypeName
     val pathClassName: ClassName
-    val originalClassName: TypeName
+    val originalClassName: ClassName
+    val originalTypeName: TypeName
 
     class ListCollection(
         val innerType: QPropertyType
     ) : QPropertyType {
-        override val originalClassName: TypeName
-            get() = List::class.asTypeName().parameterizedBy(innerType.originalClassName)
+        override val originalClassName: ClassName
+            get() = List::class.asClassName()
+
+        override val originalTypeName: TypeName
+            get() = List::class.asTypeName().parameterizedBy(innerType.originalTypeName)
 
         override val pathClassName: ClassName
             get() = ListPath::class.asClassName()
 
         override val pathTypeName: TypeName
-            get() = ListPath::class.asClassName().parameterizedBy(innerType.originalClassName, innerType.pathTypeName)
+            get() = ListPath::class.asClassName().parameterizedBy(innerType.originalTypeName, innerType.pathTypeName)
     }
 
     class SetCollection(
         val innerType: QPropertyType
     ) : QPropertyType {
-        override val originalClassName: TypeName
-            get() = Set::class.asTypeName().parameterizedBy(innerType.originalClassName)
+        override val originalClassName: ClassName
+            get() = Set::class.asClassName()
+
+        override val originalTypeName: TypeName
+            get() = Set::class.asTypeName().parameterizedBy(innerType.originalTypeName)
 
         override val pathClassName: ClassName
             get() = SetPath::class.asClassName()
 
         override val pathTypeName: TypeName
-            get() = SetPath::class.asClassName().parameterizedBy(innerType.originalClassName, innerType.pathTypeName)
+            get() = SetPath::class.asClassName().parameterizedBy(innerType.originalTypeName, innerType.pathTypeName)
     }
 
     class MapCollection(
         val keyType: QPropertyType,
         val valueType: QPropertyType
     ) : QPropertyType {
-        override val originalClassName: TypeName
-            get() = Map::class.asTypeName().parameterizedBy(keyType.originalClassName, valueType.originalClassName)
+        override val originalClassName: ClassName
+            get() = Map::class.asClassName()
+
+        override val originalTypeName: TypeName
+            get() = Map::class.asTypeName().parameterizedBy(keyType.originalTypeName, valueType.originalTypeName)
 
         override val pathClassName: ClassName
             get() = MapPath::class.asClassName()
 
         override val pathTypeName: TypeName
-            get() = MapPath::class.asTypeName().parameterizedBy(keyType.originalClassName, valueType.originalClassName, valueType.pathTypeName)
+            get() = MapPath::class.asTypeName().parameterizedBy(keyType.originalTypeName, valueType.originalTypeName, valueType.pathTypeName)
     }
 
     class Simple(
         val type: SimpleType
     ) : QPropertyType {
-        override val originalClassName: TypeName
+        override val originalClassName: ClassName
+            get() = type.className
+
+        override val originalTypeName: TypeName
             get() = type.className
 
         override val pathClassName: ClassName
@@ -68,10 +82,30 @@ sealed interface QPropertyType {
             get() = type.pathTypeName
     }
 
+    class Unknown(
+        private val innerClassName: ClassName,
+        private val innerTypeName: TypeName
+    ) : QPropertyType {
+        override val originalClassName: ClassName
+            get() = innerClassName
+
+        override val originalTypeName: TypeName
+            get() = innerTypeName
+
+        override val pathClassName: ClassName
+            get() = SimplePath::class.asClassName()
+
+        override val pathTypeName: TypeName
+            get() = SimplePath::class.asTypeName().parameterizedBy(innerTypeName)
+    }
+
     class EnumReference(
         val enumClassName: ClassName
     ) : QPropertyType {
-        override val originalClassName: TypeName
+        override val originalClassName: ClassName
+            get() = enumClassName
+
+        override val originalTypeName: TypeName
             get() = enumClassName
 
         override val pathClassName: ClassName
@@ -82,10 +116,20 @@ sealed interface QPropertyType {
     }
 
     class ObjectReference(
-        val target: QueryModel
+        val target: QueryModel,
+        val typeArgs: List<TypeName>
     ) : QPropertyType {
-        override val originalClassName: TypeName
+        override val originalClassName: ClassName
             get() = target.originalClassName
+
+        override val originalTypeName: TypeName
+            get() {
+                if (typeArgs.isEmpty()) {
+                    return target.originalClassName
+                } else {
+                    return target.originalClassName.parameterizedBy(typeArgs)
+                }
+            }
 
         override val pathClassName: ClassName
             get() = target.className

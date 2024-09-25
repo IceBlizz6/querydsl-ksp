@@ -5,6 +5,8 @@ import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.ksp.toClassName
+import com.squareup.kotlinpoet.ksp.toTypeName
+import jakarta.persistence.Convert
 
 class TypeExtractor(
     private val property: KSPropertyDeclaration,
@@ -20,6 +22,7 @@ class TypeExtractor(
                 ?: simpleType(type)
                 ?: referenceType(type)
                 ?: collectionType(type)
+                ?: userType(type)
                 ?: throwError("Type was not recognised, This may be an entity that has not been annotated with @Entity, or maybe you are using javax instead of jakarta.")
         }
     }
@@ -90,11 +93,23 @@ class TypeExtractor(
                     if (target == null) {
                         return null
                     } else {
-                        return QPropertyType.ObjectReference(target)
+                        return QPropertyType.ObjectReference(target, type.arguments.map { it.toTypeName() })
                     }
                 }
                 else -> null
             }
+        } else {
+            return null
+        }
+    }
+
+    private fun userType(type: KSType): QPropertyType.Unknown? {
+        val userTypeAnnotations = listOf(
+            ClassName("org.hibernate.annotations", "Type"),
+            Convert::class.asClassName()
+        )
+        if (property.annotations.any { userTypeAnnotations.contains(it.annotationType.resolve().toClassName()) }) {
+            return QPropertyType.Unknown(type.toClassName(), type.toTypeName())
         } else {
             return null
         }
