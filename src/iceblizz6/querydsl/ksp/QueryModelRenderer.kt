@@ -25,6 +25,7 @@ object QueryModelRenderer {
             .constructorForVariable(model)
             .constructorForTypeMetadata(model)
             .addInitializerCompanionObject(model)
+            .addInheritedProperties(model)
             .build()
     }
 
@@ -67,6 +68,26 @@ object QueryModelRenderer {
             .map { renderProperty(it) }
             .forEach { addProperty(it) }
         return this
+    }
+
+    private fun TypeSpec.Builder.addInheritedProperties(model: QueryModel): TypeSpec.Builder {
+        model.superclass?.let { superclass ->
+            superclass.properties
+                .map { renderInheritedProperty(it) }
+                .forEach { addProperty(it) }
+            addInheritedProperties(superclass)
+        }
+        return this
+    }
+
+    private fun renderInheritedProperty(property: QProperty): PropertySpec {
+        return PropertySpec.builder(property.name, property.type.pathTypeName)
+            .getter(
+                FunSpec.getterBuilder()
+                    .addCode("return _super.${property.name}")
+                    .build()
+            )
+            .build()
     }
 
     private fun renderProperty(property: QProperty): PropertySpec {
