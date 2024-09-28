@@ -176,7 +176,7 @@ sealed interface SimpleType {
                 this[Int::class] = QNumber(Int::class.asClassName())
                 this[UInt::class] = QNumber(Int::class.asClassName())
                 this[Long::class] = QNumber(Long::class.asClassName())
-                this[ULong::class] = QNumber(ULong::class.asClassName())
+                this[ULong::class] = QNumber(Long::class.asClassName())
                 this[Float::class] = QNumber(Float::class.asClassName())
                 this[Double::class] = QNumber(Double::class.asClassName())
 
