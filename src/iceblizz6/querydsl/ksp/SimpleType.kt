@@ -1,131 +1,218 @@
 package iceblizz6.querydsl.ksp
 
-import com.querydsl.core.types.dsl.*
+import com.querydsl.core.types.dsl.ArrayPath
+import com.querydsl.core.types.dsl.BooleanPath
+import com.querydsl.core.types.dsl.ComparablePath
+import com.querydsl.core.types.dsl.DatePath
+import com.querydsl.core.types.dsl.DateTimePath
+import com.querydsl.core.types.dsl.NumberPath
+import com.querydsl.core.types.dsl.SimplePath
+import com.querydsl.core.types.dsl.StringPath
+import com.querydsl.core.types.dsl.TimePath
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.asTypeName
 import java.math.BigDecimal
 import java.math.BigInteger
+import java.sql.Blob
+import java.sql.Clob
+import java.sql.NClob
+import java.time.Duration
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.time.Year
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.ZonedDateTime
-import java.util.*
+import java.util.Locale
+import java.util.Calendar
+import java.util.Currency
+import java.util.TimeZone
+import kotlin.reflect.KClass
 
-enum class SimpleType(
-    val detectedClassNames: List<ClassName>,
-    val className: ClassName,
-    val pathClassName: ClassName,
+sealed interface SimpleType {
+    val className: ClassName
+    val pathClassName: ClassName
     val pathTypeName: TypeName
-) {
-    ANY(
-        listOf(Any::class.asClassName()),
-        Any::class.asClassName(),
-        SimplePath::class.asClassName(),
-        SimplePath::class.asClassName().parameterizedBy(Any::class.asClassName())
-    ),
-    CHAR(
-        listOf(Char::class.asClassName()),
-        Char::class.asClassName(),
-        ComparablePath::class.asClassName(),
-        ComparablePath::class.asClassName().parameterizedBy(Char::class.asClassName())
-    ),
-    STRING(
-        listOf(String::class.asClassName()),
-        String::class.asClassName(),
-        StringPath::class.asClassName(),
-        StringPath::class.asTypeName()
-    ),
-    UUID(
-        listOf(java.util.UUID::class.asClassName()),
-        java.util.UUID::class.asClassName(),
-        ComparablePath::class.asClassName(),
-        ComparablePath::class.asClassName().parameterizedBy(java.util.UUID::class.asClassName())
-    ),
-    BYTE(
-        listOf(Byte::class.asClassName(), UByte::class.asClassName()),
-        Byte::class.asClassName(),
-        NumberPath::class.asClassName(),
-        NumberPath::class.parameterizedBy(Byte::class)
-    ),
-    SHORT(
-        listOf(Short::class.asClassName(), UShort::class.asClassName()),
-        Short::class.asClassName(),
-        NumberPath::class.asClassName(),
-        NumberPath::class.parameterizedBy(Short::class)
-    ),
-    INT(
-        listOf(Int::class.asClassName(), UInt::class.asClassName()),
-        Int::class.asClassName(),
-        NumberPath::class.asClassName(),
-        NumberPath::class.parameterizedBy(Int::class)
-    ),
-    BIG_INTEGER(
-        listOf(BigInteger::class.asClassName()),
-        BigInteger::class.asClassName(),
-        NumberPath::class.asClassName(),
-        NumberPath::class.parameterizedBy(BigInteger::class)
-    ),
-    LONG(
-        listOf(Long::class.asClassName(), ULong::class.asClassName()),
-        Long::class.asClassName(),
-        NumberPath::class.asClassName(),
-        NumberPath::class.parameterizedBy(Long::class)
-    ),
-    FLOAT(
-        listOf(Float::class.asClassName(), Float::class.asClassName()),
-        Float::class.asClassName(),
-        NumberPath::class.asClassName(),
-        NumberPath::class.parameterizedBy(Float::class)
-    ),
-    DOUBLE(
-        listOf(Double::class.asClassName()),
-        Double::class.asClassName(),
-        NumberPath::class.asClassName(),
-        NumberPath::class.parameterizedBy(Double::class)
-    ),
-    BIG_DECIMAL(
-        listOf(BigDecimal::class.asClassName()),
-        BigDecimal::class.asClassName(),
-        NumberPath::class.asClassName(),
-        NumberPath::class.parameterizedBy(BigDecimal::class)
-    ),
-    BOOLEAN(
-        listOf(Boolean::class.asClassName()),
-        Boolean::class.asClassName(),
-        BooleanPath::class.asClassName(),
-        BooleanPath::class.asTypeName()
-    ),
-    LOCAL_DATE(
-        listOf(LocalDate::class.asClassName()),
-        LocalDate::class.asClassName(),
-        DatePath::class.asClassName(),
-        DatePath::class.parameterizedBy(LocalDate::class)
-    ),
-    ZONED_DATE_TIME(
-        listOf(ZonedDateTime::class.asClassName()),
-        ZonedDateTime::class.asClassName(),
-        DateTimePath::class.asClassName(),
-        DateTimePath::class.parameterizedBy(ZonedDateTime::class)
-    ),
-    LOCAL_DATE_TIME(
-        listOf(LocalDateTime::class.asClassName()),
-        LocalDateTime::class.asClassName(),
-        DateTimePath::class.asClassName(),
-        DateTimePath::class.parameterizedBy(LocalDateTime::class)
-    ),
-    LOCAL_TIME(
-        listOf(LocalTime::class.asClassName()),
-        LocalTime::class.asClassName(),
-        TimePath::class.asClassName(),
-        TimePath::class.parameterizedBy(LocalTime::class)
-    ),
-    LOCALE(
-        listOf(Locale::class.asClassName()),
-        Locale::class.asClassName(),
-        SimplePath::class.asClassName(),
-        SimplePath::class.parameterizedBy(Locale::class)
-    ),
+    fun render(name: String): PropertySpec
+
+    class Array(
+        private val collectionType: ClassName,
+        private val singleType: ClassName
+    ) : SimpleType {
+        override val className = collectionType
+        override val pathClassName = ArrayPath::class.asClassName()
+        override val pathTypeName = ArrayPath::class.asClassName().parameterizedBy(collectionType, singleType)
+
+        override fun render(name: String): PropertySpec {
+            return PropertySpec
+                .builder(name, pathTypeName)
+                .initializer("createArray(\"$name\", ${collectionType}::class.java)")
+                .build()
+        }
+    }
+
+    class Simple(private val innerType: ClassName) : SimpleType {
+        override val className = innerType
+        override val pathClassName = SimplePath::class.asClassName()
+        override val pathTypeName = SimplePath::class.asClassName().parameterizedBy(innerType)
+
+        override fun render(name: String): PropertySpec {
+            return PropertySpec
+                .builder(name,pathTypeName)
+                .initializer("createSimple(\"$name\", ${innerType}::class.java)")
+                .build()
+        }
+    }
+
+    class Comparable(private val innerType: ClassName) : SimpleType {
+        override val className = innerType
+        override val pathClassName = ComparablePath::class.asClassName()
+        override val pathTypeName = ComparablePath::class.asClassName().parameterizedBy(innerType)
+
+        override fun render(name: String): PropertySpec {
+            return PropertySpec
+                .builder(name, pathTypeName)
+                .initializer("createComparable(\"$name\", ${innerType}::class.java)")
+                .build()
+        }
+    }
+
+    class QNumber(private val innerType: ClassName) : SimpleType {
+        override val className = innerType
+        override val pathClassName = NumberPath::class.asClassName()
+        override val pathTypeName = NumberPath::class.asClassName().parameterizedBy(innerType)
+
+        override fun render(name: String): PropertySpec {
+            return PropertySpec
+                .builder(name, pathTypeName)
+                .initializer("createNumber(\"$name\", ${innerType}::class.java)")
+                .build()
+        }
+    }
+
+    class Date(private val innerType: ClassName) : SimpleType {
+        override val className = innerType
+        override val pathClassName = DatePath::class.asClassName()
+        override val pathTypeName = DatePath::class.asClassName().parameterizedBy(innerType)
+
+        override fun render(name: String): PropertySpec {
+            return PropertySpec
+                .builder(name, pathTypeName)
+                .initializer("createDate(\"$name\", ${innerType}::class.java)")
+                .build()
+        }
+    }
+
+    class DateTime(private val innerType: ClassName) : SimpleType {
+        override val className = innerType
+        override val pathClassName = DateTimePath::class.asClassName()
+        override val pathTypeName = DateTimePath::class.asClassName().parameterizedBy(innerType)
+
+        override fun render(name: String): PropertySpec {
+            return PropertySpec
+                .builder(name, pathTypeName)
+                .initializer("createDateTime(\"$name\", ${innerType}::class.java)")
+                .build()
+        }
+    }
+
+    class Time(private val innerType: ClassName) : SimpleType {
+        override val className = innerType
+        override val pathClassName = TimePath::class.asClassName()
+        override val pathTypeName = TimePath::class.asClassName().parameterizedBy(innerType)
+
+        override fun render(name: String): PropertySpec {
+            return PropertySpec
+                .builder(name, pathTypeName)
+                .initializer("createTime(\"$name\", ${innerType}::class.java)")
+                .build()
+        }
+    }
+
+    class QString : SimpleType {
+        override val className = String::class.asClassName()
+        override val pathClassName = StringPath::class.asClassName()
+        override val pathTypeName = StringPath::class.asTypeName()
+
+        override fun render(name: String): PropertySpec {
+            return PropertySpec
+                .builder(name, pathTypeName)
+                .initializer("createString(\"$name\")")
+                .build()
+        }
+    }
+
+    class QBoolean : SimpleType {
+        override val className = Boolean::class.asClassName()
+        override val pathClassName = BooleanPath::class.asClassName()
+        override val pathTypeName = BooleanPath::class.asTypeName()
+
+        override fun render(name: String): PropertySpec {
+            return PropertySpec
+                .builder(name, pathTypeName)
+                .initializer("createBoolean(\"$name\")")
+                .build()
+        }
+    }
+
+    object Mapper {
+        private val typeMap: Map<ClassName, SimpleType> = mutableMapOf<KClass<*>, SimpleType>()
+            .apply {
+                this[Char::class] = Comparable(Char::class.asClassName())
+                this[String::class] = QString()
+                this[Boolean::class] = QBoolean()
+
+                this[Byte::class] = QNumber(Byte::class.asClassName())
+                this[UByte::class] = QNumber(Byte::class.asClassName())
+                this[Short::class] = QNumber(Short::class.asClassName())
+                this[UShort::class] = QNumber(Short::class.asClassName())
+                this[Int::class] = QNumber(Int::class.asClassName())
+                this[UInt::class] = QNumber(Int::class.asClassName())
+                this[Long::class] = QNumber(Long::class.asClassName())
+                this[ULong::class] = QNumber(ULong::class.asClassName())
+                this[Float::class] = QNumber(Float::class.asClassName())
+                this[Double::class] = QNumber(Double::class.asClassName())
+
+                this[BigInteger::class] = QNumber(BigInteger::class.asClassName())
+                this[BigDecimal::class] = QNumber(BigDecimal::class.asClassName())
+                this[java.util.UUID::class] = Comparable(java.util.UUID::class.asClassName())
+
+                this[LocalDate::class] = Date(LocalDate::class.asClassName())
+                this[ZonedDateTime::class] = DateTime(ZonedDateTime::class.asClassName())
+                this[LocalDateTime::class] = DateTime(LocalDateTime::class.asClassName())
+                this[LocalTime::class] = Time(LocalTime::class.asClassName())
+                this[Locale::class] = Simple(Locale::class.asClassName())
+                this[ByteArray::class] = Array(ByteArray::class.asClassName(), Byte::class.asClassName())
+                this[CharArray::class] = Array(CharArray::class.asClassName(), Char::class.asClassName())
+                this[ZoneId::class] = Simple(ZoneId::class.asClassName())
+                this[ZoneOffset::class] = Comparable(ZoneOffset::class.asClassName())
+                this[Year::class] = Comparable(Year::class.asClassName())
+                this[OffsetDateTime::class] = DateTime(OffsetDateTime::class.asClassName())
+                this[Instant::class] = DateTime(Instant::class.asClassName())
+                this[java.util.Date::class] = DateTime(java.util.Date::class.asClassName())
+                this[Calendar::class] = DateTime(Calendar::class.asClassName())
+                this[java.sql.Date::class] = Date(java.sql.Date::class.asClassName())
+                this[java.sql.Time::class] = Time(java.sql.Time::class.asClassName())
+                this[java.sql.Timestamp::class] = DateTime(java.sql.Timestamp::class.asClassName())
+                this[Duration::class] = Comparable(Duration::class.asClassName())
+                this[Blob::class] = Simple(Blob::class.asClassName())
+                this[Clob::class] = Simple(Clob::class.asClassName())
+                this[NClob::class] = Simple(NClob::class.asClassName())
+                this[Currency::class] = Simple(Currency::class.asClassName())
+                this[TimeZone::class] = Simple(TimeZone::class.asClassName())
+                this[java.net.URL::class] = Simple(java.net.URL::class.asClassName())
+            }
+            .mapKeys { it.key.asClassName() }
+
+        fun get(className: ClassName): SimpleType? {
+            return typeMap[className]
+        }
+    }
 }

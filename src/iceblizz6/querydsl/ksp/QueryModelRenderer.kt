@@ -94,7 +94,7 @@ object QueryModelRenderer {
         val name = property.name
         val type = property.type
         return when (type) {
-            is QPropertyType.Simple -> renderSimpleProperty(name, type)
+            is QPropertyType.Simple -> property.type.type.render(name)
             is QPropertyType.EnumReference -> renderEnumReference(name, type)
             is QPropertyType.ObjectReference -> renderObjectReference(name, type)
             is QPropertyType.Unknown -> renderUnknownProperty(name, type)
@@ -118,119 +118,6 @@ object QueryModelRenderer {
                 PropertySpec
                     .builder(name, SetPath::class.asClassName().parameterizedBy(inner.originalTypeName, inner.pathTypeName))
                     .initializer("createSet(\"$name\", ${inner.originalClassName}::class.java, ${inner.pathClassName}::class.java, null)")
-                    .build()
-            }
-        }
-    }
-
-    private fun renderSimpleProperty(name: String, property: QPropertyType.Simple): PropertySpec {
-        return when (property.type) {
-            SimpleType.ANY -> {
-                PropertySpec
-                    .builder(name, SimplePath::class.asClassName().parameterizedBy(Any::class.asClassName()))
-                    .initializer("createSimple(\"$name\", Any::class.java)")
-                    .build()
-            }
-            SimpleType.STRING -> {
-                PropertySpec
-                    .builder(name, StringPath::class.asClassName())
-                    .initializer("createString(\"$name\")")
-                    .build()
-            }
-            SimpleType.CHAR -> {
-                PropertySpec
-                    .builder(name, ComparablePath::class.asClassName().parameterizedBy(Char::class.asClassName()))
-                    .initializer("createComparable(\"$name\", Char::class.java)")
-                    .build()
-            }
-            SimpleType.BYTE -> {
-                PropertySpec
-                    .builder(name, NumberPath::class.asClassName().parameterizedBy(Byte::class.asClassName()))
-                    .initializer("createNumber(\"$name\", Byte::class.java)")
-                    .build()
-            }
-            SimpleType.INT -> {
-                PropertySpec
-                    .builder(name, NumberPath::class.asClassName().parameterizedBy(Int::class.asClassName()))
-                    .initializer("createNumber(\"$name\", Int::class.java)")
-                    .build()
-            }
-            SimpleType.LONG -> {
-                PropertySpec
-                    .builder(name, NumberPath::class.asClassName().parameterizedBy(Long::class.asClassName()))
-                    .initializer("createNumber(\"$name\", Long::class.java)")
-                    .build()
-            }
-            SimpleType.UUID -> {
-                PropertySpec
-                    .builder(name, ComparablePath::class.asClassName().parameterizedBy(UUID::class.asClassName()))
-                    .initializer("createComparable(\"$name\", UUID::class.java)")
-                    .build()
-            }
-            SimpleType.SHORT -> {
-                PropertySpec
-                    .builder(name, NumberPath::class.asClassName().parameterizedBy(Short::class.asClassName()))
-                    .initializer("createNumber(\"$name\", Short::class.java)")
-                    .build()
-            }
-            SimpleType.BIG_INTEGER -> {
-                PropertySpec
-                    .builder(name, NumberPath::class.asClassName().parameterizedBy(BigInteger::class.asClassName()))
-                    .initializer("createNumber(\"$name\", BigInteger::class.java)")
-                    .build()
-            }
-            SimpleType.FLOAT -> {
-                PropertySpec
-                    .builder(name, NumberPath::class.asClassName().parameterizedBy(Float::class.asClassName()))
-                    .initializer("createNumber(\"$name\", Float::class.java)")
-                    .build()
-            }
-            SimpleType.DOUBLE -> {
-                PropertySpec
-                    .builder(name, NumberPath::class.asClassName().parameterizedBy(Double::class.asClassName()))
-                    .initializer("createNumber(\"$name\", Double::class.java)")
-                    .build()
-            }
-            SimpleType.BIG_DECIMAL -> {
-                PropertySpec
-                    .builder(name, NumberPath::class.asClassName().parameterizedBy(BigDecimal::class.asClassName()))
-                    .initializer("createNumber(\"$name\", BigDecimal::class.java)")
-                    .build()
-            }
-            SimpleType.BOOLEAN -> {
-                PropertySpec
-                    .builder(name, BooleanPath::class.asClassName())
-                    .initializer("createBoolean(\"$name\")")
-                    .build()
-            }
-            SimpleType.LOCAL_DATE -> {
-                PropertySpec
-                    .builder(name, DatePath::class.asClassName().parameterizedBy(LocalDate::class.asClassName()))
-                    .initializer("createDate(\"$name\", LocalDate::class.java)")
-                    .build()
-            }
-            SimpleType.ZONED_DATE_TIME -> {
-                PropertySpec
-                    .builder(name, DateTimePath::class.asClassName().parameterizedBy(ZonedDateTime::class.asClassName()))
-                    .initializer("createDateTime(\"$name\", ZonedDateTime::class.java)")
-                    .build()
-            }
-            SimpleType.LOCAL_DATE_TIME -> {
-                PropertySpec
-                    .builder(name, DateTimePath::class.asClassName().parameterizedBy(LocalDateTime::class.asClassName()))
-                    .initializer("createDateTime(\"$name\", LocalDateTime::class.java)")
-                    .build()
-            }
-            SimpleType.LOCAL_TIME -> {
-                PropertySpec
-                    .builder(name, TimePath::class.asClassName().parameterizedBy(LocalTime::class.asClassName()))
-                    .initializer("createTime(\"$name\", LocalTime::class.java)")
-                    .build()
-            }
-            SimpleType.LOCALE -> {
-                PropertySpec
-                    .builder(name, SimplePath::class.asClassName().parameterizedBy(Locale::class.asClassName()))
-                    .initializer("createSimple(\"$name\", Locale::class.java)")
                     .build()
             }
         }
