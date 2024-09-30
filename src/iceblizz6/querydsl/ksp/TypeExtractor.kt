@@ -18,11 +18,11 @@ class TypeExtractor(
             val innerType = declaration.type.resolve()
             return extract(innerType)
         } else {
-            return parameterType(type)
+            return userType(type)
+                ?: parameterType(type)
                 ?: simpleType(type)
                 ?: referenceType(type)
                 ?: collectionType(type)
-                ?: userType(type)
                 ?: throwError("Type was not recognised, This may be an entity that has not been annotated with @Entity, or maybe you are using javax instead of jakarta.")
         }
     }
