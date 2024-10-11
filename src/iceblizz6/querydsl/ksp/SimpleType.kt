@@ -165,6 +165,7 @@ sealed interface SimpleType {
     object Mapper {
         private val typeMap: Map<ClassName, SimpleType> = mutableMapOf<KClass<*>, SimpleType>()
             .apply {
+                this[Any::class] = Simple(Any::class.asClassName())
                 this[Char::class] = Comparable(Char::class.asClassName())
                 this[String::class] = QString()
                 this[Boolean::class] = QBoolean()
