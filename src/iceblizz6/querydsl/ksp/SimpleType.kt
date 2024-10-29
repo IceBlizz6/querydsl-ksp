@@ -10,6 +10,7 @@ import com.querydsl.core.types.dsl.SimplePath
 import com.querydsl.core.types.dsl.StringPath
 import com.querydsl.core.types.dsl.TimePath
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
@@ -40,7 +41,14 @@ sealed interface SimpleType {
     val className: ClassName
     val pathClassName: ClassName
     val pathTypeName: TypeName
-    fun render(name: String): PropertySpec
+    fun render(name: String,forInterface: Boolean): PropertySpec
+
+    companion object {
+        fun getPropertySpec(name: String, typeName: TypeName, forInterface: Boolean, forClassOnly:PropertySpec.Builder.()->Unit) = PropertySpec.builder(
+            name, typeName,
+            if (!forInterface) listOf(KModifier.OVERRIDE) else emptyList()
+        ).apply { if (!forInterface) forClassOnly(this) }.build()
+    }
 
     class Array(
         private val collectionType: ClassName,
@@ -50,11 +58,10 @@ sealed interface SimpleType {
         override val pathClassName = ArrayPath::class.asClassName()
         override val pathTypeName = ArrayPath::class.asClassName().parameterizedBy(collectionType, singleType)
 
-        override fun render(name: String): PropertySpec {
-            return PropertySpec
-                .builder(name, pathTypeName)
-                .initializer("createArray(\"$name\", ${collectionType}::class.java)")
-                .build()
+        override fun render(name: String,forInterface: Boolean): PropertySpec {
+            return getPropertySpec(name, pathTypeName, forInterface) {
+                initializer("createArray(\"$name\", ${collectionType}::class.java)")
+            }
         }
     }
 
@@ -63,11 +70,9 @@ sealed interface SimpleType {
         override val pathClassName = SimplePath::class.asClassName()
         override val pathTypeName = SimplePath::class.asClassName().parameterizedBy(innerType)
 
-        override fun render(name: String): PropertySpec {
-            return PropertySpec
-                .builder(name,pathTypeName)
-                .initializer("createSimple(\"$name\", ${innerType}::class.java)")
-                .build()
+        override fun render(name: String,forInterface: Boolean): PropertySpec {
+            return getPropertySpec(name,pathTypeName,forInterface)
+                 {initializer("createSimple(\"$name\", ${innerType}::class.java)") }
         }
     }
 
@@ -76,11 +81,10 @@ sealed interface SimpleType {
         override val pathClassName = ComparablePath::class.asClassName()
         override val pathTypeName = ComparablePath::class.asClassName().parameterizedBy(innerType)
 
-        override fun render(name: String): PropertySpec {
-            return PropertySpec
-                .builder(name, pathTypeName)
-                .initializer("createComparable(\"$name\", ${innerType}::class.java)")
-                .build()
+        override fun render(name: String,forInterface: Boolean): PropertySpec {
+            return getPropertySpec(name, pathTypeName,forInterface) {
+                initializer("createComparable(\"$name\", ${innerType}::class.java)")
+            }
         }
     }
 
@@ -89,11 +93,10 @@ sealed interface SimpleType {
         override val pathClassName = NumberPath::class.asClassName()
         override val pathTypeName = NumberPath::class.asClassName().parameterizedBy(innerType)
 
-        override fun render(name: String): PropertySpec {
-            return PropertySpec
-                .builder(name, pathTypeName)
-                .initializer("createNumber(\"$name\", ${innerType}::class.java)")
-                .build()
+        override fun render(name: String,forInterface: Boolean): PropertySpec {
+            return getPropertySpec(name, pathTypeName,forInterface) {
+                initializer("createNumber(\"$name\", ${innerType}::class.java)")
+            }
         }
     }
 
@@ -102,11 +105,10 @@ sealed interface SimpleType {
         override val pathClassName = DatePath::class.asClassName()
         override val pathTypeName = DatePath::class.asClassName().parameterizedBy(innerType)
 
-        override fun render(name: String): PropertySpec {
-            return PropertySpec
-                .builder(name, pathTypeName)
-                .initializer("createDate(\"$name\", ${innerType}::class.java)")
-                .build()
+        override fun render(name: String,forInterface: Boolean): PropertySpec {
+            return getPropertySpec(name, pathTypeName,forInterface) {
+                initializer("createDate(\"$name\", ${innerType}::class.java)")
+            }
         }
     }
 
@@ -115,11 +117,10 @@ sealed interface SimpleType {
         override val pathClassName = DateTimePath::class.asClassName()
         override val pathTypeName = DateTimePath::class.asClassName().parameterizedBy(innerType)
 
-        override fun render(name: String): PropertySpec {
-            return PropertySpec
-                .builder(name, pathTypeName)
-                .initializer("createDateTime(\"$name\", ${innerType}::class.java)")
-                .build()
+        override fun render(name: String,forInterface: Boolean): PropertySpec {
+            return getPropertySpec(name, pathTypeName,forInterface) {
+                initializer("createDateTime(\"$name\", ${innerType}::class.java)")
+            }
         }
     }
 
@@ -128,11 +129,10 @@ sealed interface SimpleType {
         override val pathClassName = TimePath::class.asClassName()
         override val pathTypeName = TimePath::class.asClassName().parameterizedBy(innerType)
 
-        override fun render(name: String): PropertySpec {
-            return PropertySpec
-                .builder(name, pathTypeName)
-                .initializer("createTime(\"$name\", ${innerType}::class.java)")
-                .build()
+        override fun render(name: String,forInterface: Boolean): PropertySpec {
+            return getPropertySpec(name, pathTypeName,forInterface)  {
+                initializer("createTime(\"$name\", ${innerType}::class.java)")
+            }
         }
     }
 
@@ -141,11 +141,10 @@ sealed interface SimpleType {
         override val pathClassName = StringPath::class.asClassName()
         override val pathTypeName = StringPath::class.asTypeName()
 
-        override fun render(name: String): PropertySpec {
-            return PropertySpec
-                .builder(name, pathTypeName)
-                .initializer("createString(\"$name\")")
-                .build()
+        override fun render(name: String,forInterface: Boolean): PropertySpec {
+            return getPropertySpec(name, pathTypeName,forInterface) {
+                initializer("createString(\"$name\")")
+            }
         }
     }
 
@@ -154,11 +153,10 @@ sealed interface SimpleType {
         override val pathClassName = BooleanPath::class.asClassName()
         override val pathTypeName = BooleanPath::class.asTypeName()
 
-        override fun render(name: String): PropertySpec {
-            return PropertySpec
-                .builder(name, pathTypeName)
-                .initializer("createBoolean(\"$name\")")
-                .build()
+        override fun render(name: String,forInterface: Boolean): PropertySpec {
+            return getPropertySpec(name, pathTypeName,forInterface) {
+                    initializer("createBoolean(\"$name\")")
+            }
         }
     }
 

@@ -42,10 +42,12 @@ class QueryDslProcessor(
         val allDeclarations = declarations.map { QueryModelExtractor.ModelDeclaration(it.key, it.value) }
         val models = QueryModelExtractor.process(settings, allDeclarations)
         models.forEach { model ->
-            val typeSpec = QueryModelRenderer.render(model)
+            val classSpec = QueryModelRenderer.renderClass(model)
+            val interfaceSpec=QueryModelRenderer.renderInterface(model)
             FileSpec.builder(model.className)
                 .indent(settings.indent)
-                .addType(typeSpec)
+                .addType(interfaceSpec)
+                .addType(classSpec)
                 .build()
                 .writeTo(codeGenerator, false)
         }

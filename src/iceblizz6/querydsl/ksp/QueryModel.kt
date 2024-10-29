@@ -8,9 +8,11 @@ class QueryModel(
     val className: ClassName,
     val type: Type
 ) {
+
     var superclass: QueryModel? = null
 
     val properties = mutableListOf<QProperty>()
+
 
     enum class Type {
         ENTITY,
