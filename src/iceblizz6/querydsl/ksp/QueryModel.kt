@@ -7,16 +7,10 @@ class QueryModel(
     val originalClassName: ClassName,
     val typeParameterCount: Int,
     val className: ClassName,
-    val type: Type,
+    val type: QueryModelType,
     val originatingFile: KSFile
 ) {
     var superclass: QueryModel? = null
 
     val properties = mutableListOf<QProperty>()
-
-    enum class Type {
-        ENTITY,
-        EMBEDDABLE,
-        SUPERCLASS
-    }
 }

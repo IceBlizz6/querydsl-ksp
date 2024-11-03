@@ -6,13 +6,6 @@ import com.querydsl.core.types.dsl.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import iceblizz6.querydsl.ksp.Naming.toCamelCase
-import java.math.BigDecimal
-import java.math.BigInteger
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZonedDateTime
-import java.util.*
 
 object QueryModelRenderer {
     fun render(model: QueryModel): TypeSpec {
@@ -38,9 +31,8 @@ object QueryModelRenderer {
         }
         superclass(
             when (model.type) {
-                QueryModel.Type.ENTITY,
-                QueryModel.Type.SUPERCLASS -> EntityPathBase::class.asClassName().parameterizedBy(constraint)
-                QueryModel.Type.EMBEDDABLE -> BeanPath::class.asClassName().parameterizedBy(constraint)
+                QueryModelType.ENTITY, QueryModelType.SUPERCLASS -> EntityPathBase::class.asClassName().parameterizedBy(constraint)
+                QueryModelType.EMBEDDABLE -> BeanPath::class.asClassName().parameterizedBy(constraint)
             }
         )
         return this
@@ -139,11 +131,11 @@ object QueryModelRenderer {
 
     private fun renderObjectReference(name: String, type: QPropertyType.ObjectReference): PropertySpec {
         return PropertySpec
-            .builder(name, type.target.className)
+            .builder(name, type.queryClassName)
             .delegate(
                 CodeBlock.builder()
                     .beginControlFlow("lazy")
-                    .addStatement("${type.target.className}(forProperty(\"${name}\"))")
+                    .addStatement("${type.queryClassName}(forProperty(\"${name}\"))")
                     .endControlFlow()
                     .build()
             )
