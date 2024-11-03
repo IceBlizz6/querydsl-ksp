@@ -29,7 +29,7 @@ repositories {
 
 dependencies {
     implementation("com.querydsl:querydsl-core:5.1.0")
-    ksp("com.github.IceBlizz6:querydsl-ksp:0.0.4")
+    ksp("com.github.IceBlizz6:querydsl-ksp:0.0.5")
 }
 ```
 
