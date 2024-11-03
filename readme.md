@@ -1,6 +1,6 @@
 # KSP for QueryDSL
 
-[![Kotlin](https://img.shields.io/badge/Kotlin-2.0.20-blue.svg)](https://kotlinlang.org)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-blue.svg)](https://kotlinlang.org)
 [![QueryDSL](https://img.shields.io/badge/QueryDSL-5.1.0-blue.svg)](http://www.querydsl.com)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
