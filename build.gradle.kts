@@ -8,6 +8,12 @@ repositories {
 	mavenCentral()
 }
 
+kotlin {
+	jvmToolchain {
+		languageVersion.set(JavaLanguageVersion.of(11))
+	}
+}
+
 sourceSets.main {
 	kotlin.srcDir("src")
 	resources.srcDir("resources")
