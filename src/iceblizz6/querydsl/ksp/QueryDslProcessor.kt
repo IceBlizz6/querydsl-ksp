@@ -47,7 +47,11 @@ class QueryDslProcessor(
                 .indent(settings.indent)
                 .addType(typeSpec)
                 .build()
-                .writeTo(codeGenerator, false)
+                .writeTo(
+                    codeGenerator = codeGenerator,
+                    aggregating = false,
+                    originatingKSFiles = listOf(model.originatingFile)
+                )
         }
     }
 

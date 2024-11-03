@@ -25,7 +25,8 @@ object QueryModelExtractor {
                     "${declaration.packageName.asString()}${settings.packageSuffix}",
                     "${settings.prefix}${declaration.simpleName.asString()}${settings.suffix}"
                 ),
-                type = modelDeclaration.type
+                type = modelDeclaration.type,
+                originatingFile = modelDeclaration.classDeclaration.containingFile!!
             )
         }
         val models = declarationToModelMap.values.toList()
