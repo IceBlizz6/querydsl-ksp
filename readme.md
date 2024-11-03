@@ -17,8 +17,8 @@ Add the KSP plugin and dependency for the processor in your `build.gradle.kts`
 
 ```kotlin
 plugins {
-    kotlin("jvm") version "2.0.20"
-    id("com.google.devtools.ksp") version "2.0.20-1.0.25"
+    kotlin("jvm") version "2.0.21"
+    id("com.google.devtools.ksp") version "2.0.21-1.0.26"
 }
 
 repositories {
