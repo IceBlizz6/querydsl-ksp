@@ -1,3 +1,11 @@
+## NOTICE
+This project is using the official [querydsl/querydsl](https://github.com/querydsl/querydsl) version, but that project has been stale for a while.
+
+So i joined the [OpenFeign/querydsl](https://github.com/OpenFeign/querydsl) fork instead.
+[Example project](https://github.com/OpenFeign/querydsl/tree/master/querydsl-examples/querydsl-example-ksp-codegen)
+
+I'm still accepting pull requests and incoming issues here for those who need, but move on to the fork if you can.
+
 # KSP for QueryDSL
 
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.21-blue.svg)](https://kotlinlang.org)
@@ -71,7 +79,3 @@ ksp {
     arg("querydsl.excludedPackages", "com.example, com.sample")
 }
 ```
-
-## Note
-* This is my first open source project so have patience and give feedback.
-* Releases may be moved to maven central at a later point.
